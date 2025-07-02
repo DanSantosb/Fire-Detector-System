@@ -6,9 +6,17 @@
 #define WDT_WSPR    (*(volatile uint32_t *)(WDT1_BASE + 0x48))
 #define WDT_WWPS    (*(volatile uint32_t *)(WDT1_BASE + 0x34))
 
-//========================================== ATIVAÇÃO DO CLOCK DO GPIO1 ==================================
+//================================ ATIVAÇÃO DO CLOCK DO GPIO1 E DO ADC ==================================
 #define CM_PER_BASE           0x44E00000
 #define CM_PER_GPIO1_CLKCTRL  (*(volatile uint32_t*)(CM_PER_BASE + 0xAC))
+
+
+//ANALISAR SE ISSO ESTÁ CERTO 
+#define CM_WKUP_ADC_TSC_CLKCTRL 0x44E004BC // Clock do ADC
+#define CM_WKUP_CLKSTCTRL       0x44E00400 // Clock domain control
+#define ADC_CLKCTRL     ((volatile unsigned int)CM_WKUP_ADC_TSC_CLKCTRL)
+#define CLKSTCTRL       ((volatile unsigned int)CM_WKUP_CLKSTCTRL)
+
 
 //======================================== CONFIG RESISTRADORES DO GPIO1 ===============================
 #define GPIO1_BASE              0x4804C000
@@ -19,6 +27,15 @@
 #define GPIO1_IRQSTATUS_SET_0   (*(volatile uint32_t*)(GPIO1_BASE + 0x34))
 #define GPIO1_IRQSTATUS_0       (*(volatile uint32_t*)(GPIO1_BASE + 0x2C))
 #define GPIO1_RISINGDETECT      (*(volatile uint32_t*)(GPIO1_BASE + 0x148))
+
+//======================================== CONFIG RESISTRADORES DO ADC ===============================
+#define ADC_TSC_BASE      0X44E0D000
+#define ADC_CTRL          (*(volatile uint32_t*)(ADC_TSC_BASE + 0X40))
+#define ADC_STEPCONFIG1   (*(volatile uint32_t*)(ADC_TSC_BASE + 0x64))
+#define ADC_STEPDELAY1    (*(volatile uint32_t*)(ADC_TSC_BASE + 0x68))
+#define ADC_FIFO0DATA     (*(volatile uint32_t*)(ADC_TSC_BASE + 0x100))
+#define ADC_STEPENABLE    (*(volatile uint32_t*)(ADC_TSC_BASE + 0x54))
+
 
 //=========================================== MUX DECLARATION ============================================
 #define CONTROL_MODULE_BASE 0x44E10000
