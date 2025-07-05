@@ -1,95 +1,41 @@
 #include <stdbool.h>
 #include <stdint.h>
-
-//====================================== CONFIG RESISTRADORES DO WATCHDOG ===============================
-#define WDT1_BASE   0x44E35000
-#define WDT_WSPR    (*(volatile uint32_t *)(WDT1_BASE + 0x48))
-#define WDT_WWPS    (*(volatile uint32_t *)(WDT1_BASE + 0x34))
-
-//================================ ATIVAÇÃO DO CLOCK DO GPIO1 E DO ADC ==================================
-#define CM_PER_BASE           0x44E00000
-#define CM_PER_GPIO1_CLKCTRL  (*(volatile uint32_t*)(CM_PER_BASE + 0xAC))
-
-
-//ANALISAR SE ISSO ESTÁ CERTO 
-#define CM_WKUP_ADC_TSC_CLKCTRL 0x44E004BC // Clock do ADC
-#define CM_WKUP_CLKSTCTRL       0x44E00400 // Clock domain control
-#define ADC_CLKCTRL     ((volatile unsigned int)CM_WKUP_ADC_TSC_CLKCTRL)
-#define CLKSTCTRL       ((volatile unsigned int)CM_WKUP_CLKSTCTRL)
-
-
-//======================================== CONFIG RESISTRADORES DO GPIO1 ===============================
-#define GPIO1_BASE              0x4804C000
-#define GPIO1_OE                (*(volatile uint32_t*)(GPIO1_BASE + 0x134))
-#define GPIO1_CLEARDATAOUT      (*(volatile uint32_t*)(GPIO1_BASE + 0x190))
-#define GPIO1_SETDATAOUT        (*(volatile uint32_t*)(GPIO1_BASE + 0x194))
-#define GPIO1_DATAIN            (*(volatile uint32_t*)(GPIO1_BASE + 0x138))
-#define GPIO1_IRQSTATUS_SET_0   (*(volatile uint32_t*)(GPIO1_BASE + 0x34))
-#define GPIO1_IRQSTATUS_0       (*(volatile uint32_t*)(GPIO1_BASE + 0x2C))
-#define GPIO1_RISINGDETECT      (*(volatile uint32_t*)(GPIO1_BASE + 0x148))
-
-//======================================== CONFIG RESISTRADORES DO ADC ===============================
-#define ADC_TSC_BASE      0X44E0D000
-#define ADC_CTRL          (*(volatile uint32_t*)(ADC_TSC_BASE + 0X40))
-#define ADC_STEPCONFIG1   (*(volatile uint32_t*)(ADC_TSC_BASE + 0x64))
-#define ADC_STEPDELAY1    (*(volatile uint32_t*)(ADC_TSC_BASE + 0x68))
-#define ADC_FIFO0DATA     (*(volatile uint32_t*)(ADC_TSC_BASE + 0x100))
-#define ADC_STEPENABLE    (*(volatile uint32_t*)(ADC_TSC_BASE + 0x54))
-
-
-//=========================================== MUX DECLARATION ============================================
-#define CONTROL_MODULE_BASE 0x44E10000
-#define CONF_GPMC_AD3       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x80C)) //MUX DO BOTÃO DE MODO
-#define CONF_GPMC_AD5       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x814)) //MUX DO SOM
-#define CONF_GPMC_AD6       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x818)) //MUX DO DISPLAY
-#define CONF_GPMC_AD7       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x81C)) //MUX DO BOTÃO RESET
-#define CONF_GPMC_AD12      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x830)) //MUX DO LED WHITE
-#define CONF_GPMC_AD13      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x834)) //MUX DO LED RED
-#define CONF_GPMC_AD14      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x838)) //MUX DO LED WELLOW
-#define CONF_GPMC_AD15      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x83C)) //MUX DO LED GREEN
-#define CONF_GPMC_CSN1      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x880)) //MUX DO MQ2
-#define CONF_GPMC_CSN2      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x884)) //MUX DO MQ6
-
-//=========================================== INTERRUPÇÃO =================================================
-#define INTC_BASE       0x48200000
-#define INTC_MIR_CLEAR3 (*(volatile uint32_t*)(INTC_BASE + 0xE8))
-#define INTC_SIR_IRQ    (*(volatile uint32_t*)(INTC_BASE + 0x40))
-#define INTC_CONTROL    (*(volatile uint32_t*)(INTC_BASE + 0x48))
-
-//========================================== CONFIG UART ==================================================
-#define UART0_BASE      0x44E09000
-#define UART0_THR       (*(volatile unsigned int *)(UART0_BASE + 0x00))// Registrador de Transmissão (que é o mesmo que o de Recepção)
-#define UART0_LSR       (*(volatile unsigned int *)(UART0_BASE + 0x14))// Base do LSR
-#define UART0_LSR_THRE  (1 << 5)                                       // Avisa que registrador THR transmite dados
-#define UART0_LSR_RHRE  (1 << 0)                                       // Avisa que registrador RHR recebe dados
-
-//============================================== DEF PIN ==================================================
-#define BUTTON_MODE_PIN   (1 << 3)  // P8_6  (BOTAO DE MODO)
-#define BUZZER            (1 << 5)  // P8_22 (PINO DO BUZZER)
-#define DISPLAY_PIN       (1 << 6)  // P8_3  (DISPLAY)
-#define BUTTON_RESET_PIN  (1 << 7)  // P8_4  (BOTAO DE RESET)
-#define LED_WHITE         (1 << 12) // P8_12 (PINO DO LED WHITE)
-#define LED_RED           (1 << 13) // P8_11 (PINO DO LED RED)
-#define LED_WELLOW        (1 << 14) // P8_16 (PINO DO LED WELLOW)
-#define LED_GREEN         (1 << 15) // P8_15 (PINO DO LED GREEN)
-#define MQ2               (1 << 30) // P8_21 (PINO DO MQ2)
-#define MQ6               (1 << 31) // P8_20 (PINO DO MQ6)
+#include "../inc/defines.h"
 
 //======================================= DECLARA O DELAY E INICIA OS BOTÕES =============================
+volatile unsigned int overflow_counter = 0;
 
-void delay(uint32_t cycles) {
-    volatile uint32_t i;
-    for(i = 0; i < cycles; i++);
+void _delay_sec(unsigned int secs) {
+  DM_TIMER7_TCLR |= DM_TIMER7_START_STOP_TIMER;
+  uint64_t alvo = (uint64_t)secs * pulsosPorSegundo;
+  while (((uint64_t)overflow_counter << 32) + DM_TIMER7_TCRR < alvo);
+  DM_TIMER7_TCLR &= ~DM_TIMER7_START_STOP_TIMER;
+  DM_TIMER7_TCRR = 0x0;
+  overflow_counter = 0;
 }
 
-volatile bool button_mode_pressed = false;
-volatile bool button_reset_pressed = false;
+void timer7_setup() { //CONFIGURA TIME
+  DM_TIMER7_TCLR = 0x0;
+  DM_TIMER7_TLDR = 0x0;
+  DM_TIMER7_TCRR = 0x0;
 
+  DM_TIMER7_TCLR |= DM_TIMER7_AUTORELOAD;
+  DM_TIMER7_IRQENABLE_SET |= (1 << 1); // Habilita interrupção por overflow
+  INTC_MIR_CLEAR2 = (1 << 31); // IRQ 95 → Timer7
+}
+
+//volatile bool button_mode_pressed = false;
+volatile bool button_reset_pressed = false;
 //============================================= FUNÇÕES DA UART ===========================================
 
 unsigned char uart0_getc(){
   while (!(UART0_LSR & 0x01));
   return UART0_THR;
+}
+
+void uart0_putc(char c) {
+    while (!(UART0_LSR & UART0_LSR_THRE));
+    UART0_THR = c;
 }
 
 void uart0_write_str(const char *str) {
@@ -121,7 +67,7 @@ void uart0_write_int(unsigned char inteiro) {
     uart0_write_str(final);
 }
 
-void printTextInt(){
+/*void printTextInt(){
   if (button_mode_pressed){
     uart0_write_str("LED INTERNO ACESO\r\n");
   } else {
@@ -134,25 +80,23 @@ void printTextRed(){
   } else {
     uart0_write_str("LED VERMELHO APAGADO\r\n");
   }
-}
+}*/
 
 //============================================= ENERGIZA OS LEDS ==============================================
 
 void changeWhite(){
-  if (button_reset_pressed){
-    GPIO1_SETDATAOUT = LED_WHITE;
-    uart0_write_str("CALIBRANDO OS SENSORES, ESPERE UM POUCO...\r\n");
-    delay(300000);
-    GPIO1_CLEARDATAOUT = LED_WHITE;
-    uart0_write_str("SENSORES CALIBRADOS :)\r\n");
-  }
+  GPIO1_SETDATAOUT = LED_RED;
+  uart0_write_str("CALIBRANDO OS SENSORES, ESPERE UM POUCO...\r\n");
+  delay(999999999);
+  GPIO1_CLEARDATAOUT = LED_RED;
+  uart0_write_str("SENSORES CALIBRADOS :)\r\n");
 }
 
-void changeWellow(){
+/*void changeYellow(){
   if (button_mode_pressed){
-    GPIO1_SETDATAOUT = LED_WELLOW;
+    GPIO1_SETDATAOUT = LED_YELLOW;
   } else {
-    GPIO1_CLEARDATAOUT = LED_WELLOW;
+    GPIO1_CLEARDATAOUT = LED_YELLOW;
   }
 }
 
@@ -171,10 +115,10 @@ void changeGreen(){
   } else {
     GPIO1_CLEARDATAOUT = LED_GREEN;
   }
-}
+}*/
 
 //================================================= CONFIG GPIO1 ============================================
-void gpio_setup(void) {
+void gpio_setup(void){
     // Ativa clock do GPIO1
     CM_PER_GPIO1_CLKCTRL |= 0x2;
     while(!(CM_PER_GPIO1_CLKCTRL & 0x3)); // Espera ativação
@@ -187,11 +131,11 @@ void gpio_setup(void) {
     CONF_GPMC_AD5   |= 7;               //SET O BUZZER NO MOD7
     CONF_GPMC_AD12  |= 7;               //SET LED WHITE NO MOD7
     CONF_GPMC_AD13  |= 7;               //SET LED RED NO MOD7
-    CONF_GPMC_AD14  |= 7;               //SET LED WELLOW NO MOD7
+    CONF_GPMC_AD14  |= 7;               //SET LED YELLOW NO MOD7
     CONF_GPMC_AD15  |= 7;               //SET LED GREEN NO MOD7
 
     // Configura pinos
-    GPIO1_OE &= ~LED_WELLOW;          // LED WELLOW como saida
+    GPIO1_OE &= ~LED_YELLOW;          // LED YELLOW como saida
     GPIO1_OE &= ~LED_GREEN;           // LED GREEN como saída
     GPIO1_OE &= ~LED_WHITE;           // LED WHITE como saida
     GPIO1_OE &= ~LED_RED;             // LED RED como saida
@@ -206,10 +150,10 @@ void gpio_setup(void) {
     //========================================= Configura interrupção ==========================================
     
     //BOTÃO RED
-    GPIO1_RISINGDETECT |= BUTTON_MODE_PIN;    // Borda de subida
+    /*GPIO1_RISINGDETECT |= BUTTON_MODE_PIN;    // Borda de subida
     GPIO1_IRQSTATUS_0 = BUTTON_MODE_PIN;      // Limpa flag pendente
     GPIO1_IRQSTATUS_SET_0 = BUTTON_MODE_PIN;  // Habilita interrupção
-
+    */
     //BOTÃO WHITE
     GPIO1_RISINGDETECT |= BUTTON_RESET_PIN;   // Borda de subida
     GPIO1_IRQSTATUS_0 = BUTTON_RESET_PIN;     // Limpa flag pendente
@@ -221,17 +165,16 @@ void gpio_setup(void) {
  
 //============================================= FUNÇÕES COM INTERRUPÇÃO =====================================
 void gpio_isr_handler(void) {
-  if(GPIO1_IRQSTATUS_0 & BUTTON_MODE_PIN) {
+  /*if(GPIO1_IRQSTATUS_0 & BUTTON_MODE_PIN) {
     delay(1000000);
     GPIO1_IRQSTATUS_0 = BUTTON_MODE_PIN; // Limpa flag
     button_mode_pressed = !button_mode_pressed;
     uart0_write_str("<Botão 2>\r\n");
     printTextRed();
-  }
+  }*/
   if(GPIO1_IRQSTATUS_0 & BUTTON_RESET_PIN) {
-    delay(1000000);
+    delay(100000);
     GPIO1_IRQSTATUS_0 = BUTTON_RESET_PIN; // Limpa flag
-    button_reset_pressed = !button_reset_pressed;
     changeWhite();
   }
   uart0_write_str("\r\n");
@@ -239,13 +182,18 @@ void gpio_isr_handler(void) {
 
 
 void ISR_Handler(void) {
-  uint32_t irq_number = INTC_SIR_IRQ & 0x7F;
-  if(irq_number == 98) {  // IRQ do GPIO1
-      gpio_isr_handler();
+  uint32_t irq = INTC_SIR_IRQ & 0x7F;
+  if (irq == 95) {
+    overflow_counter++;
+    DM_TIMER7_IRQ_EOI = 0x0;
   }
-  INTC_CONTROL = 0x1;     // Reabilita interrupções
+  if (irq == 98){
+    if (GPIO1_IRQSTATUS_0 & BUTTON_RESET_PIN){
+      button_reset_pressed=!button_reset_pressed;
+      GPIO1_IRQSTATUS_0 &= ~GPIO1_IRQSTATUS_0;
+    }
+  }
 }
-
 //============================================= DESLISGA O WATCHDOG =========================================  
 void disable_watchdog(void) {
   WDT_WSPR = 0xAAAA;
@@ -257,18 +205,16 @@ void disable_watchdog(void) {
 
 int main(void) {
     disable_watchdog();
-
     gpio_setup();
-    uart0_write_str("----------------------------------------\r\n");
-    uart0_write_str("             MENU DO PROJETO\r\n");
-    uart0_write_str("----------------------------------------\r\n\n");
-    uart0_write_str("BOTÃO 1) LED INTERNO\r\n");
-    uart0_write_str("BOTÃO 2) LED VERMELHO\r\n");
-    uart0_write_str("BOTÃO 3) LED BRANCO\r\n\n");
-    uart0_write_str("----------------------------------------\r\n");
-    
+
+    while(1){
+      __asm__ __volatile__("nop");
+      delay(300);
+    }
+
+
     // Loop principal
-  while (1){
+  /*while (1){
     char entrada = uart0_getc();
 
     if (entrada - '0' == 1){
@@ -288,7 +234,6 @@ int main(void) {
       delay(1000000);
       button_white_pressed = !button_white_pressed;
       changeWhite();
-      printTextWhite();
     } else if (entrada == 'h'){
       uart0_write_str("\r\n");
       uart0_write_str("----------------------------------------\r\n");
@@ -303,6 +248,6 @@ int main(void) {
 
     uart0_write_str("\r\n");
     
-  }
-    return 0;
-}
+  }*/
+  return 0;
+} 
