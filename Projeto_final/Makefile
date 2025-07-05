@@ -12,6 +12,9 @@ SRC=src/
 OBJ=obj/
 BIN=bin/
 
+# adiciona todos os .h que main.c depende
+DEPS = $(wildcard inc/*.h)
+
 
 # mude NOME_EXEC para mudar o nome do seu executável
 NOME_EXEC = appGpio
@@ -30,7 +33,7 @@ app: start.o main.o
 start.o: $(SRC)start.s
 	$(CHAIN)-as $(IPATH) $(SRC)start.s -o $(OBJ)start.o
 
-main.o: $(SRC)main.c
+main.o: $(SRC)main.c $(DEPS)
 	$(CHAIN)-gcc $(CFLAGS) $(IPATH) -c $(SRC)main.c -o $(OBJ)main.o
                                         
 copy:
