@@ -4,11 +4,12 @@
 #define WDT_WSPR    (*(volatile uint32_t *)(WDT1_BASE + 0x48))
 #define WDT_WWPS    (*(volatile uint32_t *)(WDT1_BASE + 0x34))
 
-//=================================== ATIVAÇÃO DO CLOCK DO GPIO1 E ADC ==================================
-#define CM_PER_BASE           0x44E00000  //Clock Module GPIO1 Registers
-#define CM_PER_GPIO1_CLKCTRL  (*(volatile uint32_t*)(CM_PER_BASE + 0xAC))
+//============================== ATIVAÇÃO DO CLOCKS (GPIO1, ADC E TIME) ================================
+#define CM_PER_BASE             0x44E00000  //Clock Module GPIO1 Registers
+#define CM_PER_GPIO1_CLKCTRL    (*(volatile uint32_t*)(CM_PER_BASE + 0xAC))
+#define CM_PER_TIMER7_CLKCTRL   (*(volatile uint32_t *)(CM_PER_BASE + 0x7C))
 
-#define CM_WKUP_BASE          0x44E00400 //Clock Module Wakeup Registers
+#define CM_WKUP_BASE            0x44E00400 //Clock Module Wakeup Registers
 #define CM_WKUP_ADC_TSC_CLKCTRL (*(volatile uint32_t *)(CM_WKUP_BASE + 0xBC))
 
 //======================================== CONFIG RESISTRADORES DO GPIO1 ===============================
@@ -34,11 +35,6 @@
 #define WDT1_BASE   0x44E35000
 #define WDT_WSPR    (*(volatile uint32_t *)(WDT1_BASE + 0x48))
 #define WDT_WWPS    (*(volatile uint32_t *)(WDT1_BASE + 0x34))
-
-//========================================== ATIVAÇÃO DO CLOCK DO GPIO1 ==================================
-#define CM_PER_BASE           0x44E00000
-#define CM_PER_GPIO1_CLKCTRL  (*(volatile uint32_t*)(CM_PER_BASE + 0xAC))
-#define CM_PER_TIMER7_CLKCTRL     (*(volatile uint32_t *)(CM_PER_BASE + 0x7C))
 
 //======================================== CONFIG RESISTRADORES DO GPIO1 ===============================
 #define GPIO1_BASE              0x4804C000
@@ -67,10 +63,10 @@
 
 //=========================================== INTERRUPÇÃO =================================================
 #define INTC_BASE       0x48200000
-
+//VERIFICAR SE A INTERRUPÇÃO DO ADC ESTÁ NO 3º VETOR
 //OLHAR SE O VETOR 3 TEM INTERRUPÇÃO POR VALOR LOGICO 
-#define INTC_MIR_CLEAR3 (*(volatile uint32_t*)(INTC_BASE + 0xE8))  // VERIFICAR SE A INTERRUPÇÃO DO ADC ESTÁ NO 3º VETOR
-#define INTC_MIR_CLEAR2 (*(volatile uint32_t*)(INTC_BASE + 0xC8))
+#define INTC_MIR_CLEAR3 (*(volatile uint32_t*)(INTC_BASE + 0xE8)) // VETOR DA INTERRUPÇÃO DO GPIO
+#define INTC_MIR_CLEAR2 (*(volatile uint32_t*)(INTC_BASE + 0xC8)) // VETOR DA INTERRUPÇÃO DO TIME
 #define INTC_SIR_IRQ    (*(volatile uint32_t*)(INTC_BASE + 0x40))
 #define INTC_CONTROL    (*(volatile uint32_t*)(INTC_BASE + 0x48))
 
@@ -94,19 +90,20 @@
 #define MQ2               (1 << 30) // P8_21 (PINO DO MQ2)
 #define MQ6               (1 << 31) // P8_20 (PINO DO MQ6)
 
-#define DM_TIMER7_BASE            0x4804A000
-#define DM_TIMER7_COUNTER         (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x3C))
-#define DM_TIMER7_TCLR            (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x38)) 
-#define DM_TIMER7_IRQENABLE_SET   (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x2C))
-#define DM_TIMER7_IRQENABLE_CLEAR (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x30))
-#define DM_TIMER7_IRQSTATUS_RAW   (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x24))
-#define DM_TIMER7_IRQ_EOI         (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x20))
-#define DM_TIMER7_TSICR           (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x54))
-#define DM_TIMER7_TCRR            (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x3C))
-#define DM_TIMER7_TLDR            (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x4C))
+//======================================== CONFIG RESISTRADORES DO TIME ===============================
+#define DM_TIMER7_BASE                  0x4804A000
+#define DM_TIMER7_COUNTER               (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x3C))
+#define DM_TIMER7_TCLR                  (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x38)) 
+#define DM_TIMER7_IRQENABLE_SET         (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x2C))
+#define DM_TIMER7_IRQENABLE_CLEAR       (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x30))
+#define DM_TIMER7_IRQSTATUS_RAW         (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x24))
+#define DM_TIMER7_IRQ_EOI               (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x20))
+#define DM_TIMER7_TSICR                 (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x54))
+#define DM_TIMER7_TCRR                  (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x3C))
+#define DM_TIMER7_TLDR                  (*(volatile uint32_t*)(DM_TIMER7_BASE + 0x4C))
 #define DM_TIMER7_START_STOP_TIMER      (1 << 0)
 #define DM_TIMER7_AUTORELOAD            (1 << 1)
 #define DM_TIMER7_PRESCALER_ENABLE      (1 << 5)
 
 #define pulsosPorSegundo                24000000
-#endif
+#endif 
