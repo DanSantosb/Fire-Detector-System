@@ -8,8 +8,11 @@
 volatile unsigned int MQ2_VALUE;
 volatile unsigned int MQ6_VALUE;
 
+volatile bool button_reset_pressed = false;
+volatile bool button_mode_pressed = false;
 //================================================= CONFIG GPIO1 ============================================
 void gpio_setup(void){
+
   // Ativa clock do GPIO1
   CM_PER_GPIO1_CLKCTRL |= 0x2;
   while(!(CM_PER_GPIO1_CLKCTRL & 0x3)); // Espera ativação
@@ -55,17 +58,21 @@ void gpio_setup(void){
 //============================================= ON/OFF OS LEDS ==============================================
 
 void changeWhite(){
-  GPIO1_CLEARDATAOUT = LED_GREEN;
-  GPIO1_CLEARDATAOUT = LED_YELLOW;
-  GPIO1_CLEARDATAOUT = LED_RED;
-  GPIO1_SETDATAOUT = LED_WHITE;
-  uart0_write_str("CALIBRANDO OS SENSORES, ESPERE UM POUCO...\r\n");
-  _delay_sec(300);
-  GPIO1_CLEARDATAOUT = LED_WHITE;
-  uart0_write_str("SENSORES CALIBRADOS :)\r\n");
+  if (button_reset_pressed){
+    GPIO1_CLEARDATAOUT = BUZZER;
+    GPIO1_CLEARDATAOUT = LED_GREEN;
+    GPIO1_CLEARDATAOUT = LED_YELLOW;
+    GPIO1_CLEARDATAOUT = LED_RED;
+    GPIO1_SETDATAOUT = LED_WHITE;
+    uart0_write_str("CALIBRANDO OS SENSORES, ESPERE UM POUCO...\r\n");
+    _delay_sec(10);
+    GPIO1_CLEARDATAOUT = LED_WHITE;
+    uart0_write_str("SENSORES CALIBRADOS :)\r\n");
+  }
 }
 
 void changeGreen(){
+  GPIO1_CLEARDATAOUT = BUZZER;
   GPIO1_SETDATAOUT = LED_GREEN;
   uart0_write_str("TUDO TRANQUILO, METRICAS NORMAIS :)\r\n");
   GPIO1_CLEARDATAOUT = LED_RED;
@@ -73,6 +80,7 @@ void changeGreen(){
 }
 
 void changeYellow(){
+  GPIO1_CLEARDATAOUT = BUZZER;
   GPIO1_SETDATAOUT = LED_YELLOW;
   uart0_write_str("ATENCAO, NIVEIS DE GAS ESTÃO FICANDO PERIGOSOS\r\n");
   GPIO1_CLEARDATAOUT = LED_RED;
@@ -88,14 +96,13 @@ void changeRed(){
 }
 
 //============================================= FUNÇÕES COM INTERRUPÇÃO =====================================
-volatile bool button_reset_pressed = false;
-volatile bool button_mode_pressed = false;
-
 void gpio_isr_handler(void) {
   if(GPIO1_IRQSTATUS_0 & BUTTON_RESET_PIN) {
-    _delay_sec(2);
+    _delay_sec(1);
     GPIO1_IRQSTATUS_0 = BUTTON_RESET_PIN; // Limpa flag
+    button_reset_pressed = !button_reset_pressed;
     changeWhite();
+    button_reset_pressed = false;
   }
 }
 
@@ -106,14 +113,7 @@ void ISR_Handler(void) {
     DM_TIMER7_IRQ_EOI = 0x0;
   }
   if (irq == 98){
-    if (GPIO1_IRQSTATUS_0 & BUTTON_RESET_PIN){
-      button_reset_pressed =! button_reset_pressed;
-      GPIO1_IRQSTATUS_0 &= ~GPIO1_IRQSTATUS_0;
-    }
-    if (GPIO1_IRQSTATUS_0 & BUTTON_MODE_PIN){
-      button_mode_pressed =! button_mode_pressed;
-      GPIO1_IRQSTATUS_0 &= ~GPIO1_IRQSTATUS_0;
-    }
+    gpio_isr_handler();
   }  
   INTC_CONTROL = 0x1;
 }
