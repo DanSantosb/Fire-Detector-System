@@ -27,9 +27,11 @@
 #define ADC_CTRL          (*(volatile uint32_t *)(ADC_TSC_BASE + 0x40))
 #define ADC_STEPENABLE    (*(volatile uint32_t *)(ADC_TSC_BASE + 0x54))
 #define ADC_STEPCONFIG1   (*(volatile uint32_t *)(ADC_TSC_BASE + 0x64))
+#define ADC_STEPCONFIG2   (*(volatile uint32_t *)(ADC_TSC_BASE + 0x06C))
 #define ADC_STEPDELAY1    (*(volatile uint32_t *)(ADC_TSC_BASE + 0x68))
 #define ADC_FIFO0DATA     (*(volatile uint32_t *)(ADC_TSC_BASE + 0x100))
 #define ADC_CLKDIV        (*(volatile uint32_t *)(ADC_TSC_BASE + 0x4C)) // DIVIDIR POR 11001 (25)
+#define ADC_IRQSTATUS     (*(volatile uint32_t *)(ADC_TSC_BASE + 0x028))
 
 //====================================== CONFIG RESISTRADORES DO WATCHDOG ===============================
 #define WDT1_BASE   0x44E35000
