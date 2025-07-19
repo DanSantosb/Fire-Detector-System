@@ -85,17 +85,18 @@ void gpio_setup(void){
   GPIO1_OE &= ~BUZZER;              // BUZZER como saida
   GPIO1_OE |= BUTTON_RESET_PIN;     // Botão RESET como entrada
 
-  GPIO1_OE |= D0;
-  GPIO1_OE |= D1;
-  GPIO1_OE |= D2;
-  GPIO1_OE |= D3;
-  GPIO1_OE |= D4;
-  GPIO1_OE |= D5;
-  GPIO1_OE |= D6;
-  GPIO1_OE |= D7;
-  GPIO1_OE |= E;
-  GPIO1_OE |= RS;
-  GPIO1_OE |= RW;
+  GPIO1_OE |= LCD_DATA0;
+  GPIO1_OE |= LCD_DATA1;
+  GPIO1_OE |= LCD_DATA2;
+  GPIO1_OE |= LCD_DATA3;
+  GPIO1_OE |= LCD_DATA4;
+  GPIO1_OE |= LCD_DATA5;
+  GPIO1_OE |= LCD_DATA6;
+  GPIO1_OE |= LCD_DATA7;
+  GPIO1_OE |= LCD_ENABLE ;
+  GPIO1_OE |= LCD_REGISTER_SELECT;
+  GPIO1_OE |= LCD_READ_WRITE;
+
 
 //========================================= Configura interrupção ==========================================
   

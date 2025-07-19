@@ -99,17 +99,27 @@
 #define LED_GREEN         (1 << 15) // P8_15 (PINO DO LED GREEN)
 #define LED_INT           (1 << 21)
 
-#define D0  (1 << 6)    //P8_3  (D0 DISPLAY)
-#define D1  (1 << 7)    //P8_4 (D1 DISPLAY)
-#define D2  (1 << 2)    //P8_5 (D2 DISPLAY)
-#define D3  (1 << 3)    //P8_6 (D3 DISPLAY)
-#define D4  (1 << 31)   //P8_20 (D4 DISPLAY)
-#define D5  (1 << 30)   //P8_21 (D5 DISPLAY)
-#define D6  (1 << 5)    //P8_22 (D6 DISPLAY)
-#define D7  (1 << 4)    //P8_23 (D7 DISPLAY)
-#define E   (1 << 1)    //P8_24 (E DISPLAY)
-#define RS  (1 << 0)    //P8_4 (RS DISPLAY)
-#define RW  (1 << 29)   //P8_4 (RW DISPLAY)
+
+#define LCD_REGISTER_SELECT (1 << 0)        //P8_4 (RS DISPLAY)   // 0 = Comando | 1 = Dado
+#define LCD_READ_WRITE (1 << 29)            //P8_4 (RW DISPLAY) 
+#define LCD_ENABLE (1 << 1)                 //P8_24 (E DISPLAY)
+#define LCD_DATA0 (1 << 6)                  //P8_3  (D0 DISPLAY)  
+#define LCD_DATA1 (1 << 7)                  //P8_4 (D1 DISPLAY)
+#define LCD_DATA2 (1 << 2)                  //P8_5 (D2 DISPLAY) 
+#define LCD_DATA3 (1 << 3)                  //P8_6 (D3 DISPLAY) 
+#define LCD_DATA4 (1 << 31)                 //P8_20 (D4 DISPLAY) 
+#define LCD_DATA5 (1 << 30)                 //P8_21 (D5 DISPLAY)
+#define LCD_DATA6 (1 << 5)                  //P8_22 (D6 DISPLAY)
+#define LCD_DATA7 (1 << 4)                  //P8_23 (D7 DISPLAY)
+
+#define CMD_CLEARDISPLAY                0x1
+#define CMD_RETURNHOME                  0x2
+#define CMD_ENTRYMODESET(id, s)         (0x4 | (s << 0) | (id << 1))
+#define CMD_DISPLAYONOFF(d, c, b)       (0x8 | (d << 2) | (c << 1) | (b << 0))
+#define CMD_FUNCTIONSET(dl, ft1, ft0)   (0x28 | (ft0 << 0) | (ft1 << 1) | (dl << 4))
+#define CMD_SETCURSOR(addr)             (0b10000000 | (addr))
+#define INICIO_LINHA1                   0x0000000
+#define INICIO_LINHA2                   0b1000000
 
 //======================================== CONFIG RESISTRADORES DO TIME ===============================
 #define DM_TIMER7_BASE            0x4804A000
