@@ -7,6 +7,49 @@
 
 volatile bool button_reset_pressed = false;
 //================================================= CONFIG ADC ==============================================
+void ADC_setup(void){
+  CM_WKUP_ADC_TSC_CLKCTRL = 0x2; 
+  while ((CM_WKUP_ADC_TSC_CLKCTRL & 0x3) != 0x2); 
+
+  // 2. Configura os pinos AIN0 e AIN1 como analógicos (modo 0)
+  CONF_AIN0 = 0x00000000;
+  CONF_AIN1 = 0x00000000;
+
+  //Habilita o ADC ==
+  ADC_CTRL = 0x01;
+  while (ADC_CTRL & 0x01); 
+
+  //Define o clock interno do ADC
+  ADC_CLKDIV = 7;
+
+  //Configura passo 1 para AIN0, VREFP/VREFN default
+  ADC_STEPCONFIG1 = (0 << 19) | (0 << 15) | (0 << 12);
+  ADC_STEPDELAY1 = (0x10 << 24) | (0x08);
+
+  //Configura passo 2 para AIN1, VREFP/VREFN default
+  ADC_STEPCONFIG2 = (1 << 19) | (0 << 15) | (0 << 12);
+  ADC_STEPDELAY2 = (0x10 << 24) | (0x08);
+}
+
+void adc_read(unsigned int* ain0_resultado, unsigned int* ain1_resultado) {
+  ADC_STEPENABLE = (1 << 1) | (1 << 2);
+
+  // Aguarda até haver pelo menos 2 dados no FIFO0
+  while ((ADC_FIFO0COUNT & 0x7F) < 2);
+
+  //Pega os valores captados e coloca em variaveis 
+  unsigned int val1 = ADC_FIFO0DATA;
+  unsigned int val2 = ADC_FIFO0DATA;
+
+  // Identifica qual valor corresponde a qual canal
+  if (((val1 >> 16) & 0xF) == 1) {  // Bits 19:16 indicam o número do step (1 para AIN0, 2 para AIN1)
+    *ain0_resultado = val1 & 0xFFF;
+    *ain1_resultado = val2 & 0xFFF;
+  } else {
+    *ain1_resultado = val1 & 0xFFF;
+    *ain0_resultado = val2 & 0xFFF;
+  }
+}
 
 //================================================= CONFIG GPIO1 ============================================
 void gpio_setup(void){

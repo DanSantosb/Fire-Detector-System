@@ -23,25 +23,16 @@
 #define GPIO1_RISINGDETECT      (*(volatile uint32_t*)(GPIO1_BASE + 0x148))
 
 //++++++++++++++++++++++++++++++++++++++++ CONFIG RESISTRADORES DO ADC ==================================
-#define ADC_TSC_BASE      0x44E0D000
-#define ADC_CTRL          (*(volatile uint32_t *)(ADC_TSC_BASE + 0x40))
-#define ADC_STEPENABLE    (*(volatile uint32_t *)(ADC_TSC_BASE + 0x54))
-#define ADC_STEPCONFIG1   (*(volatile uint32_t *)(ADC_TSC_BASE + 0x64))
-#define ADC_STEPCONFIG2   (*(volatile uint32_t *)(ADC_TSC_BASE + 0x06C))
-#define ADC_STEPDELAY1    (*(volatile uint32_t *)(ADC_TSC_BASE + 0x68))
-#define ADC_STEPDELAY2    (*(volatile uint32_t *)(ADC_TSC_BASE + 0x6C))
-#define ADC_FIFO0DATA     (*(volatile uint32_t *)(ADC_TSC_BASE + 0x100))
-#define ADC_CLKDIV        (*(volatile uint32_t *)(ADC_TSC_BASE + 0x4C)) // DIVIDIR POR 11001 (25)
-#define ADC_IRQSTATUS     (*(volatile uint32_t *)(ADC_TSC_BASE + 0x028))
-#define ADC_FIFO0COUNT    (*(volatile uint32_t *)(ADC_TSC_BASE + 0xE4))
-#define MQ2_ANALOG_PIN          0  // AIN0 (P9_39)
-#define MQ6_ANALOG_PIN          1  // AIN1 (P9_40)
-
-// Constantes dos sensores
-#define MQ2_RL                 10000   // Resistor de carga recomendado para MQ-2 (10KΩ)
-#define MQ6_RL                 20000   // Resistor de carga recomendado para MQ-6 (20KΩ)
-#define VCC                    5.0f    // Tensão de alimentação (5V conforme datasheet)
-#define ADC_MAX                4095    // Valor máximo do ADC (12 bits)
+#define ADC_TSC_BASE                0x44E0D000
+#define ADC_CTRL                    (*(volatile uint32_t *)(ADC_TSC_BASE + 0x40))
+#define ADC_CLKDIV                  (*(volatile uint32_t *)(ADC_TSC_BASE + 0x4C))
+#define ADC_STEPENABLE              (*(volatile uint32_t *)(ADC_TSC_BASE + 0x54))
+#define ADC_STEPCONFIG1             (*(volatile uint32_t *)(ADC_TSC_BASE + 0x64))
+#define ADC_STEPDELAY1              (*(volatile uint32_t *)(ADC_TSC_BASE + 0x68))
+#define ADC_STEPCONFIG2             (*(volatile uint32_t *)(ADC_TSC_BASE + 0x6C))
+#define ADC_STEPDELAY2              (*(volatile uint32_t *)(ADC_TSC_BASE + 0x70))
+#define ADC_FIFO0COUNT              (*(volatile uint32_t *)(ADC_TSC_BASE + 0xE4))
+#define ADC_FIFO0DATA               (*(volatile uint32_t *)(ADC_TSC_BASE + 0x100))
 
 //====================================== CONFIG RESISTRADORES DO WATCHDOG ===============================
 #define WDT1_BASE   0x44E35000
