@@ -3,7 +3,6 @@
 #include "../inc/headers.h"
 #include "../inc/IOsetups.h"
 #include "../inc/timer.h"
-#include "../inc/Sensor.h"
 
 //============================================= DESLIGA O WATCHDOG =========================================  
 void disable_watchdog(void) {
@@ -30,7 +29,6 @@ int main(void) {
   disable_watchdog();
   gpio_setup();
   begin_WMTIMER7();
-  ADC_setup();
 
   GPIO1_SETDATAOUT = LED_WHITE;
   uart0_writeln("CALIBRANDO SENSORES, ESPERE UM POUCO...");
@@ -38,18 +36,16 @@ int main(void) {
   GPIO1_CLEARDATAOUT = LED_WHITE;
   uart0_writeln("SENSORS CALIBRADOS :)");
   
-  float ppm_MQ2, ppm_MQ6;
-  //Loop principal
-  while (1){
-    lerSensores(&ppm_MQ2, &ppm_MQ6);
 
-    if (ppm_MQ2 < 500 || ppm_MQ6 < 500){
-      changeGreen(); 
-    } else if (ppm_MQ2 >= 500 && ppm_MQ2 <= 999 || ppm_MQ6 >= 500 && ppm_MQ6 <= 999){
-      changeYellow();
-    } else if (ppm_MQ2 >= 1000 || ppm_MQ6 >= 1000){
-      changeRed();
-    }
+ while (1){
+  if ((GPIO1_DATAIN & (1 << 18)) && (GPIO1_DATAIN & (1 << 19))){
+    changeGreen();
+    _delay_sec(2);
+  }else{
+    changeRed();
+    _delay_sec(2);
   }
+}
+ 
   return 0;
 } 

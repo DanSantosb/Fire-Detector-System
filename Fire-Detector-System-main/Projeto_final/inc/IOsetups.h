@@ -6,50 +6,6 @@
 #include <stdbool.h>
 
 volatile bool button_reset_pressed = false;
-//================================================= CONFIG ADC ==============================================
-void ADC_setup(void){
-  CM_WKUP_ADC_TSC_CLKCTRL = 0x2; 
-  while ((CM_WKUP_ADC_TSC_CLKCTRL & 0x3) != 0x2); 
-
-  // 2. Configura os pinos AIN0 e AIN1 como analógicos (modo 0)
-  CONF_AIN0 = 0x00000000;
-  CONF_AIN1 = 0x00000000;
-
-  //Habilita o ADC ==
-  ADC_CTRL = 0x01;
-  while (ADC_CTRL & 0x01); 
-
-  //Define o clock interno do ADC
-  ADC_CLKDIV = 7;
-
-  //Configura passo 1 para AIN0, VREFP/VREFN default
-  ADC_STEPCONFIG1 = (0 << 19) | (0 << 15) | (0 << 12);
-  ADC_STEPDELAY1 = (0x10 << 24) | (0x08);
-
-  //Configura passo 2 para AIN1, VREFP/VREFN default
-  ADC_STEPCONFIG2 = (1 << 19) | (0 << 15) | (0 << 12);
-  ADC_STEPDELAY2 = (0x10 << 24) | (0x08);
-}
-
-void adc_read(unsigned int* ain0_resultado, unsigned int* ain1_resultado) {
-  ADC_STEPENABLE = (1 << 1) | (1 << 2);
-
-  // Aguarda até haver pelo menos 2 dados no FIFO0
-  while ((ADC_FIFO0COUNT & 0x7F) < 2);
-
-  //Pega os valores captados e coloca em variaveis 
-  unsigned int val1 = ADC_FIFO0DATA;
-  unsigned int val2 = ADC_FIFO0DATA;
-
-  // Identifica qual valor corresponde a qual canal
-  if (((val1 >> 16) & 0xF) == 1) {  // Bits 19:16 indicam o número do step (1 para AIN0, 2 para AIN1)
-    *ain0_resultado = val1 & 0xFFF;
-    *ain1_resultado = val2 & 0xFFF;
-  } else {
-    *ain1_resultado = val1 & 0xFFF;
-    *ain0_resultado = val2 & 0xFFF;
-  }
-}
 
 //================================================= CONFIG GPIO1 ============================================
 void gpio_setup(void){
@@ -76,6 +32,8 @@ void gpio_setup(void){
   CONF_GPMC_AD15  |= 7;               //SET LED GREEN NO MOD7
   CONF_GPMC_A0    |= 7;               //SET O BUZZER NO MOD7
   CONF_GPMC_BE1N  |= (7 | (1 << 5));  //SET O RESET NO MOD7 E RECEPTOR ATIVO
+  CONF_GPMC_A2    |= (7 | (1 << 5));  //SET O MQ2 NO MOD7 E RECEPTOR ATIVO
+  CONF_GPMC_A3    |= (7 | (1 << 5));  //SET O M16 NO MOD7 E RECEPTOR ATIVO 
 
   // Configura pinos
   GPIO1_OE &= ~LED_YELLOW;          // LED YELLOW como saida
@@ -84,6 +42,8 @@ void gpio_setup(void){
   GPIO1_OE &= ~LED_RED;             // LED RED como saida
   GPIO1_OE &= ~BUZZER;              // BUZZER como saida
   GPIO1_OE |= BUTTON_RESET_PIN;     // Botão RESET como entrada
+  GPIO1_OE |= MQ2;                  // MQ2 como estrada
+  GPIO1_OE |= MQ6;                  // MQ6 como entrada
 
   GPIO1_OE |= LCD_DATA0;
   GPIO1_OE |= LCD_DATA1;
@@ -96,7 +56,6 @@ void gpio_setup(void){
   GPIO1_OE |= LCD_ENABLE ;
   GPIO1_OE |= LCD_REGISTER_SELECT;
   GPIO1_OE |= LCD_READ_WRITE;
-
 
 //========================================= Configura interrupção ==========================================
   
@@ -132,14 +91,6 @@ void changeGreen(){
   GPIO1_CLEARDATAOUT = LED_YELLOW;
 }
 
-void changeYellow(){
-  GPIO1_CLEARDATAOUT = BUZZER;
-  GPIO1_SETDATAOUT = LED_YELLOW;
-  uart0_writeln("ATENCAO, NIVEIS DE GAS ESTÃO FICANDO PERIGOSOS\r\n");
-  GPIO1_CLEARDATAOUT = LED_RED;
-  GPIO1_CLEARDATAOUT = LED_GREEN;
-}
-
 void changeRed(){
   GPIO1_SETDATAOUT = LED_RED;
   uart0_writeln("CUIDADO !!! PERIGO EXTREMO\r\n");
@@ -158,6 +109,4 @@ void gpio_isr_handler(void) {
     button_reset_pressed = false;
   }
 }
-
-
 #endif

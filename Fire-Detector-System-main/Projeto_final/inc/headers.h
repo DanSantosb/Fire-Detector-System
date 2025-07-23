@@ -22,18 +22,6 @@
 #define GPIO1_IRQSTATUS_0       (*(volatile uint32_t*)(GPIO1_BASE + 0x2C))
 #define GPIO1_RISINGDETECT      (*(volatile uint32_t*)(GPIO1_BASE + 0x148))
 
-//++++++++++++++++++++++++++++++++++++++++ CONFIG RESISTRADORES DO ADC ==================================
-#define ADC_TSC_BASE                0x44E0D000
-#define ADC_CTRL                    (*(volatile uint32_t *)(ADC_TSC_BASE + 0x40))
-#define ADC_CLKDIV                  (*(volatile uint32_t *)(ADC_TSC_BASE + 0x4C))
-#define ADC_STEPENABLE              (*(volatile uint32_t *)(ADC_TSC_BASE + 0x54))
-#define ADC_STEPCONFIG1             (*(volatile uint32_t *)(ADC_TSC_BASE + 0x64))
-#define ADC_STEPDELAY1              (*(volatile uint32_t *)(ADC_TSC_BASE + 0x68))
-#define ADC_STEPCONFIG2             (*(volatile uint32_t *)(ADC_TSC_BASE + 0x6C))
-#define ADC_STEPDELAY2              (*(volatile uint32_t *)(ADC_TSC_BASE + 0x70))
-#define ADC_FIFO0COUNT              (*(volatile uint32_t *)(ADC_TSC_BASE + 0xE4))
-#define ADC_FIFO0DATA               (*(volatile uint32_t *)(ADC_TSC_BASE + 0x100))
-
 //====================================== CONFIG RESISTRADORES DO WATCHDOG ===============================
 #define WDT1_BASE   0x44E35000
 #define WDT_WSPR    (*(volatile uint32_t *)(WDT1_BASE + 0x48))
@@ -57,27 +45,27 @@
 #define CONF_GPMC_AD15      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x83C)) // MUX DO LED GREEN
 #define CONF_GPMC_BE1N      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x878)) // MUX DO RESET
 #define CONF_GPMC_A0        (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x840)) // MUX DO BUZZER
+#define CONF_GPMC_A2        (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x848)) // MUX DO MQ2  DO
+#define CONF_GPMC_A3        (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x84C)) // MUX DO MQ6  DO
+
+// Verificar entrada digital
+// GPIO1_DATAIN & (1 << NUMERODOGPIO)
 
 //LCD 
 #define CONF_GPMC_AD6       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x818)) // MUX D0    PIN3
 #define CONF_GPMC_AD7       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x81C)) // MUX D1    PIN4
 #define CONF_GPMC_AD2       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x808)) // MUX D2    PIN5
 #define CONF_GPMC_AD3       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x80C)) // MUX D3    PIN6
-#define CONF_GPMC_CSN1      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x880)) // MUX D4    PIN21
 #define CONF_GPMC_CSN2      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x884)) // MUX D5    PIN20
+#define CONF_GPMC_CSN1      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x880)) // MUX D4    PIN21
 #define CONF_GPMC_AD5       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x814)) // MUX D6    PIN22
 #define CONF_GPMC_AD4       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x810)) // MUX D7    PIN23
 #define CONF_GPMC_AD1       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x804)) // MUX DO E  PIN24
 #define CONF_GPMC_AD0       (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x800)) // MUX DO RS PIN25
 #define CONF_GPMC_CSN0      (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x87C)) // MUX DO RW PIN26
 
-#define CONF_AIN0           (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x984)) // P9_39 MUX DO MQ2ADC_STEPDELAY2 ANALOGICO
-#define CONF_AIN1           (*(volatile uint32_t*)(CONTROL_MODULE_BASE + 0x988)) // P9_40 MUX DO MQ6 ANALOGICO
-
 //=========================================== INTERRUPÇÃO =================================================
 #define INTC_BASE       0x48200000
-//VERIFICAR SE A INTERRUPÇÃO DO ADC ESTÁ NO 3º VETOR
-//OLHAR SE O VETOR 3 TEM INTERRUPÇÃO POR VALOR LOGICO 
 #define INTC_MIR_CLEAR3 (*(volatile uint32_t*)(INTC_BASE + 0xE8)) // VETOR DA INTERRUPÇÃO DO GPIO
 #define INTC_MIR_CLEAR2 (*(volatile uint32_t*)(INTC_BASE + 0xC8)) // VETOR DA INTERRUPÇÃO DO TIME
 #define INTC_SIR_IRQ    (*(volatile uint32_t*)(INTC_BASE + 0x40))
@@ -91,6 +79,8 @@
 #define UART0_LSR_RHRE  (1 << 0)                                         // Avisa que registrador RHR recebe dados
 
 //============================================== DEF PIN ==================================================
+#define MQ2               (1 << 18) // P9_14 
+#define MQ6               (1 << 19) // P9_16
 #define BUZZER            (1 << 16) // P9_15 (PINO DO BUZZER)
 #define BUTTON_RESET_PIN  (1 << 28) // P9_12 (BOTAO DE RESET)
 #define LED_WHITE         (1 << 12) // P8_12 (PINO DO LED WHITE)
@@ -100,17 +90,17 @@
 #define LED_INT           (1 << 21)
 
 
-#define LCD_REGISTER_SELECT (1 << 0)        //P8_4 (RS DISPLAY)   // 0 = Comando | 1 = Dado
-#define LCD_READ_WRITE (1 << 29)            //P8_4 (RW DISPLAY) 
-#define LCD_ENABLE (1 << 1)                 //P8_24 (E DISPLAY)
-#define LCD_DATA0 (1 << 6)                  //P8_3  (D0 DISPLAY)  
-#define LCD_DATA1 (1 << 7)                  //P8_4 (D1 DISPLAY)
-#define LCD_DATA2 (1 << 2)                  //P8_5 (D2 DISPLAY) 
-#define LCD_DATA3 (1 << 3)                  //P8_6 (D3 DISPLAY) 
-#define LCD_DATA4 (1 << 31)                 //P8_20 (D4 DISPLAY) 
-#define LCD_DATA5 (1 << 30)                 //P8_21 (D5 DISPLAY)
-#define LCD_DATA6 (1 << 5)                  //P8_22 (D6 DISPLAY)
-#define LCD_DATA7 (1 << 4)                  //P8_23 (D7 DISPLAY)
+#define LCD_REGISTER_SELECT (1 << 0)    //P8_25 (RS DISPLAY)   // 0 = Comando | 1 = Dado
+#define LCD_READ_WRITE      (1 << 29)   //P8_26 (RW DISPLAY) 
+#define LCD_ENABLE          (1 << 1)    //P8_24 (E DISPLAY)
+#define LCD_DATA0           (1 << 6)    //P8_3  (D0 DISPLAY)  
+#define LCD_DATA1           (1 << 7)    //P8_4 (D1 DISPLAY)
+#define LCD_DATA2           (1 << 2)    //P8_5 (D2 DISPLAY) 
+#define LCD_DATA3           (1 << 3)    //P8_6 (D3 DISPLAY) 
+#define LCD_DATA4           (1 << 31)   //P8_20 (D4 DISPLAY) 
+#define LCD_DATA5           (1 << 30)   //P8_21 (D5 DISPLAY)
+#define LCD_DATA6           (1 << 5)    //P8_22 (D6 DISPLAY)
+#define LCD_DATA7           (1 << 4)    //P8_23 (D7 DISPLAY)
 
 #define CMD_CLEARDISPLAY                0x1
 #define CMD_RETURNHOME                  0x2

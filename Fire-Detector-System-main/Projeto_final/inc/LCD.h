@@ -84,6 +84,8 @@ bool readCMDBitFromLCD(uint8_t bit){
   return buffer[bit];
 }
 
+
+
 void writeCharToLCD(char c) {
   setupForWrite();
 
@@ -102,6 +104,8 @@ void writeCharToLCD(char c) {
   _delay_ms(50); // necessário para dar tempo de processar o caractere
 }
 
+
+
 void writeStringToLCD(const char* s) {
   while (*s) {
     writeCharToLCD(*s++);
@@ -112,6 +116,8 @@ void writeStringToLCD(const char* s) {
 
 int main() {
   // Configuração dos pinos de controle
+  gpio_setup();
+
   pinMode(LCD_ENABLE, true);
   pinMode(LCD_READ_WRITE, true);
   pinMode(LCD_REGISTER_SELECT, true);
