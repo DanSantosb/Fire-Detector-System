@@ -3,6 +3,7 @@
 #include "../inc/headers.h"
 #include "../inc/IOsetups.h"
 #include "../inc/timer.h"
+#include"../inc/uart.h"
 
 //============================================= DESLIGA O WATCHDOG =========================================  
 void disable_watchdog(void) {
@@ -30,6 +31,7 @@ int main(void) {
   gpio_setup();
   begin_WMTIMER7();
 
+  
   GPIO1_SETDATAOUT = LED_WHITE;
   uart0_writeln("CALIBRANDO SENSORES, ESPERE UM POUCO...");
   _delay_sec(10);
